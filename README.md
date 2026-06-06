@@ -1,37 +1,46 @@
-# Investment Portfolio Optimization and Financial Analysis
+# Quantitative Portfolio Optimization, Fundamental Analysis & Monte Carlo Forecasting
 
 ## 📌 Project Overview
-[cite_start]This repository contains a comprehensive investment portfolio optimization and financial analysis project completed as part of the "Financial Management" curriculum[cite: 1]. [cite_start]The primary objective of the project is to develop, optimize, and evaluate an investment portfolio using empirical historical data from the 2024 and 2025 fiscal years[cite: 1]. [cite_start]The project demonstrates a rigorous approach to asset selection, fundamental analysis, risk management, and quantitative portfolio optimization techniques[cite: 1].
+This repository contains a comprehensive, Python-driven financial engineering project designed to automate fundamental stock analysis, optimize investment portfolios using advanced risk-adjusted metrics, and forecast future portfolio performance. Utilizing empirical market data (2024 base year vs. 2025 test year), the project integrates quantitative methods, mathematical optimization, and stochastic modeling to build and evaluate robust investment strategies.
 
-## ⚙️ Key Features & Methodology
+## ⚙️ Core Architecture & Scripts
 
-* [cite_start]**Market Selection & Asset Screening:** Evaluation and selection of a global stock exchange (e.g., NYSE, NASDAQ, LSE, MOEX)[cite: 1]. [cite_start]An initial universe of 15–25 companies across 4–5 sectors was screened down to a final optimized selection consisting of at least 8 stocks and 2 stabilizing assets[cite: 1].
-* [cite_start]**Fundamental Analysis:** In-depth evaluation of corporate financial health over a two-year period (2024–2025) using key financial ratios and valuation multiples[cite: 1]:
-  * [cite_start]**Profitability Metrics:** Return on Equity (ROE), Return on Invested Capital (ROIC), and Profit Margin[cite: 1].
-  * [cite_start]**Valuation Multiples:** P/E, P/B, PEG, and P/S ratios[cite: 1].
-  * [cite_start]**Leverage & Earnings:** EV/EBITDA and Net Debt / EBITDA[cite: 1].
-* [cite_start]**Quantitative Portfolio Optimization:** Construction of the **Efficient Frontier** based on historical daily closing prices[cite: 1]. [cite_start]Portfolio asset weights were optimized under specific constraints (upper/lower weight bounds, minimal return thresholds, and maximum risk limits) across 5 distinct strategic criteria[cite: 1]:
-  1. [cite_start]Maximum Return [cite: 1]
-  2. [cite_start]Minimum Risk (Minimum Variance Portfolio) [cite: 1]
-  3. [cite_start]Maximum Sharpe Ratio [cite: 1]
-  4. [cite_start]Maximum Conditional Sharpe Ratio [cite: 1]
-  5. [cite_start]Maximum Modified Sharpe Ratio [cite: 1]
-* [cite_start]**Performance Backtesting & Evaluation:** Comparative analysis of an equally-weighted portfolio against the 5 optimized portfolio models across both 2024 and 2025 historical data[cite: 1]. [cite_start]The performance was benchmarked using key risk-adjusted metrics[cite: 1]:
-  * [cite_start]Total Risk & Annualized Return [cite: 1]
-  * [cite_start]Sharpe Ratio [cite: 1]
-  * [cite_start]M² Coefficient (Modigliani-Modigliani) [cite: 1]
-  * [cite_start]Treynor Measure [cite: 1]
-  * [cite_start]Jensen's Alpha [cite: 1]
-  * [cite_start]Conditional & Modified Sharpe Ratios [cite: 1]
+The project is divided into three primary modules:
 
-## 🛠️ Tech Stack & Tools
+### 1. Automated Fundamental & Valuation Analysis (`collect info.py`)
+A robust data pipeline that fetches historical market data, income statements, balance sheets, and cash flow statements via `yfinance`. 
+* **Financial Modeling:** Automatically calculates NOPAT, Free Cash Flow (FCF), and Invested Capital.
+* **Profitability & Liquidity:** Computes ROE, ROA, ROIC, Gross/Operating/Net Margins, Current/Quick/Cash Ratios.
+* **Debt & Valuation Multiples:** Calculates D/E, Interest Coverage, Net Debt / EBITDA, P/E, P/S, P/FCF, EV/EBITDA, P/B, and PEG ratios.
+* **Output:** Generates a comprehensive Excel workbook consolidating raw data, multi-year CAGRs, and comparative valuation metrics.
 
-* [cite_start]**Python (Jupyter Notebook):** Used for automating historical data collection, calculating asset growth rates, generating covariance matrices, and portfolio backtesting algorithms (`.py` / `.ipynb` scripts)[cite: 1].
-* **Libraries:** `pandas`, `numpy`, `matplotlib` / `seaborn` (for matrix operations, financial data structuring, and plotting the Efficient Frontier).
-* [cite_start]**MS Excel:** Comprehensive financial modeling, verification of optimization models, and dynamic asset tracking[cite: 1].
+### 2. Advanced Portfolio Optimization (`start portfolio.py`)
+Utilizes `scipy.optimize` (SLSQP method) to determine optimal asset allocation boundaries for a selected universe of equities and benchmark ETFs (e.g., NASDAQ, VOO, IAU).
+* **Risk-Adjusted Performance:** Calculates standard and advanced metrics including Sharpe Ratio, Treynor Measure, Jensen's Alpha, and the M² Coefficient.
+* **Tail Risk Assessment:** Computes Skewness, Kurtosis, Value at Risk (VaR), Conditional VaR (CVaR), and Modified VaR (MVAR/Z-MVAR).
+* **Optimization Strategies:** Solves for 5 distinct portfolio structures under strict weight constraints:
+  1. Maximum Annual Return
+  2. Minimum Daily Standard Deviation
+  3. Maximum Sharpe Ratio
+  4. Maximum Conditional Sharpe Ratio (ConSR)
+  5. Maximum Modified Sharpe Ratio (ModSR)
 
-## 📂 Repository Structure
-* [cite_start]`/data` — Historical daily closing prices and stock exchange data[cite: 1].
-* [cite_start]`/scripts` — Python scripts and Jupyter Notebooks for data parsing, calculations, and optimization[cite: 1].
-* [cite_start]`/models` — MS Excel workbook (`.xlsx`) featuring formulas, growth rates, covariance matrices, solver configurations, and charts[cite: 1].
-* [cite_start]`/reports` — Comprehensive analytical report (`.docx`) and presentation (`.pptx`) detailing the strategic rationale, findings, and conclusions[cite: 1].
+### 3. Stochastic Forecasting (`monte carlo.py`)
+Predicts future portfolio behavior based on historical volatility and inter-asset correlations.
+* **Correlated Random Walks:** Uses Cholesky decomposition of the covariance matrix to simulate correlated asset returns, avoiding naive independent asset assumptions.
+* **High-Volume Simulation:** Executes 100,000 Monte Carlo simulations over a 365-day trading horizon.
+* **Backtesting & Visualization:** Plots the 10th (Pessimistic), 50th (Median), and 90th (Optimistic) percentiles of the simulated portfolio paths against the **actual** historical performance of the portfolio in the test year.
+
+## 🛠️ Tech Stack & Libraries
+
+* **Language:** Python
+* **Data Manipulation & Analysis:** `pandas`, `numpy`
+* **Mathematical Optimization & Statistics:** `scipy` (`scipy.optimize`, `scipy.stats`)
+* **Financial Data Parsing:** `yfinance`
+* **Visualization:** `matplotlib`
+* **Reporting:** MS Excel (`openpyxl`, `xlsxwriter` via pandas)
+
+## 📊 Results & Output
+* **Optimized Allocations:** Successfully bounded asset weights to maximize specific risk-adjusted returns (e.g., punishing downside tail risk via CVaR optimization).
+* **Predictive Accuracy:** The Monte Carlo simulations provided a statistically sound confidence interval, verified against actual out-of-sample data from the following fiscal year.
+* **Automated Reporting:** Outputs deeply structured `.xlsx` files containing covariance matrices, daily/annual returns, fundamental breakdowns, and optimization test results for easy sharing and presentation.
