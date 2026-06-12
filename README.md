@@ -1,46 +1,37 @@
-# Quantitative Portfolio Optimization, Fundamental Analysis & Monte Carlo Forecasting
+📈 Формирование, оптимизация и стресс-тестирование инвестиционного портфеля (NASDAQ)
 
-## 📌 Project Overview
-This repository contains a comprehensive, Python-driven financial engineering project designed to automate fundamental stock analysis, optimize investment portfolios using advanced risk-adjusted metrics, and forecast future portfolio performance. Utilizing empirical market data (2024 base year vs. 2025 test year), the project integrates quantitative methods, mathematical optimization, and stochastic modeling to build and evaluate robust investment strategies.
+Учебный проект, выполненный в рамках курса «Финансовый менеджмент» в НИУ ВШЭ (Высшая школа бизнеса).
 
-## ⚙️ Core Architecture & Scripts
+Проект посвящен количественному анализу фондового рынка: от фундаментального отбора акций технологического сектора США (биржа NASDAQ) до построения границы эффективности Марковица и продвинутого стресс-тестирования хвостовых рисков с помощью симуляций Монте-Карло (модель Jump-Diffusion).
 
-The project is divided into three primary modules:
+🎯 Цели и задачи проекта
+Главная цель — алгоритмически собрать инвестиционный портфель, оптимизировать его структуру и проверить на прочность («на разрыв») в условиях макроэкономических шоков и рыночной неопределенности.
 
-### 1. Automated Fundamental & Valuation Analysis (`collect info.py`)
-A robust data pipeline that fetches historical market data, income statements, balance sheets, and cash flow statements via `yfinance`. 
-* **Financial Modeling:** Automatically calculates NOPAT, Free Cash Flow (FCF), and Invested Capital.
-* **Profitability & Liquidity:** Computes ROE, ROA, ROIC, Gross/Operating/Net Margins, Current/Quick/Cash Ratios.
-* **Debt & Valuation Multiples:** Calculates D/E, Interest Coverage, Net Debt / EBITDA, P/E, P/S, P/FCF, EV/EBITDA, P/B, and PEG ratios.
-* **Output:** Generates a comprehensive Excel workbook consolidating raw data, multi-year CAGRs, and comparative valuation metrics.
+Ключевые этапы:
 
-### 2. Advanced Portfolio Optimization (`start portfolio.py`)
-Utilizes `scipy.optimize` (SLSQP method) to determine optimal asset allocation boundaries for a selected universe of equities and benchmark ETFs (e.g., NASDAQ, VOO, IAU).
-* **Risk-Adjusted Performance:** Calculates standard and advanced metrics including Sharpe Ratio, Treynor Measure, Jensen's Alpha, and the M² Coefficient.
-* **Tail Risk Assessment:** Computes Skewness, Kurtosis, Value at Risk (VaR), Conditional VaR (CVaR), and Modified VaR (MVAR/Z-MVAR).
-* **Optimization Strategies:** Solves for 5 distinct portfolio structures under strict weight constraints:
-  1. Maximum Annual Return
-  2. Minimum Daily Standard Deviation
-  3. Maximum Sharpe Ratio
-  4. Maximum Conditional Sharpe Ratio (ConSR)
-  5. Maximum Modified Sharpe Ratio (ModSR)
+Фундаментальный скрининг: Отбор 10 наиболее устойчивых и эффективных компаний из 22 кандидатов на основе мультипликаторов (P/E, EV/EBITDA, P/S) и показателей рентабельности (ROE, ROIC, Net Margin) в 5 секторах.
+Алгоритмическая оптимизация: Расчет ковариационных матриц и поиск оптимальных весов (Max Sharpe, Min Volatility) на данных 2024 года.
+Форвардное тестирование (Out-of-sample): Проверка "обученных" весов на турбулентных данных 2025 года и сравнение со стратегией равных долей (1/N).
+Стресс-тестирование (Monte Carlo): Симуляция 10 000 сценариев на 5 лет вперед с использованием модели диффузии со скачками Мертона (Jump-Diffusion) для оценки риска (CVaR) при обвалах рынка до -15%.
+🛠️ Стек технологий
+Язык: Python 3
+Сбор данных: yfinance
+Математика и оптимизация: numpy, pandas, scipy.optimize
+Визуализация: matplotlib, seaborn
+🧠 Главные выводы исследования (Инсайт)
+В ходе работы был обнаружен и математически доказан парадокс портфельной оптимизации:
 
-### 3. Stochastic Forecasting (`monte carlo.py`)
-Predicts future portfolio behavior based on historical volatility and inter-asset correlations.
-* **Correlated Random Walks:** Uses Cholesky decomposition of the covariance matrix to simulate correlated asset returns, avoiding naive independent asset assumptions.
-* **High-Volume Simulation:** Executes 100,000 Monte Carlo simulations over a 365-day trading horizon.
-* **Backtesting & Visualization:** Plots the 10th (Pessimistic), 50th (Median), and 90th (Optimistic) percentiles of the simulated portfolio paths against the **actual** historical performance of the portfolio in the test year.
+В условиях "шумного", но растущего рынка 2025 года оптимизированный портфель (Max SR) уступил наивному распределению 1/N по доходности. Оптимизация показалась "переобученной".
+Однако Монте-Карло симуляция хвостовых рисков доказала обратное: алгоритм Марковица выстроил сверхзащитную «броню». При возникновении тяжелых кризисов и обвалов рынка (от -5% до -15%), оптимизированный портфель проявил непревзойденную устойчивость, обыграв равновзвешенную стратегию абсолютно во всех 25 кризисных сценариях.
+📂 Структура репозитория
+collect info.py — скрипт автоматического сбора исторических котировок через API Yahoo Finance и их первичной очистки.
+portfolio_analize.py — ядро проекта: расчет доходностей, ковариаций, построение границы эффективности Марковица, расчет коэффициента Шарпа и других метрик.
+monte carlo.py — реализация модели Мертона (Jump-Diffusion). Генерация матриц случайного шума и пуассоновских "скачков", построение конуса вероятностей и расчет метрики CVaR (Conditional Value-at-Risk).
+👥 Команда проекта (НИУ ВШЭ)
+Андреев В. В.
+Бутенко А. А.
+Валиева М. Г.
+Григорян Д. Н.
+Дао Фи Хунг(Отвечает за код и все расчеты, провел дополнительный анализ Монте карло)
+(Студенты образовательной программы «Маркетинг и рыночная аналитика»)
 
-## 🛠️ Tech Stack & Libraries
-
-* **Language:** Python
-* **Data Manipulation & Analysis:** `pandas`, `numpy`
-* **Mathematical Optimization & Statistics:** `scipy` (`scipy.optimize`, `scipy.stats`)
-* **Financial Data Parsing:** `yfinance`
-* **Visualization:** `matplotlib`
-* **Reporting:** MS Excel (`openpyxl`, `xlsxwriter` via pandas)
-
-## 📊 Results & Output
-* **Optimized Allocations:** Successfully bounded asset weights to maximize specific risk-adjusted returns (e.g., punishing downside tail risk via CVaR optimization).
-* **Predictive Accuracy:** The Monte Carlo simulations provided a statistically sound confidence interval, verified against actual out-of-sample data from the following fiscal year.
-* **Automated Reporting:** Outputs deeply structured `.xlsx` files containing covariance matrices, daily/annual returns, fundamental breakdowns, and optimization test results for easy sharing and presentation.
