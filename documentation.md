@@ -1,125 +1,125 @@
-# Документация к скрипту расчета финансовых показателей
+# Documentation for the Financial Metrics Calculation Script
 
-Данный документ описывает источники данных и формулы расчета всех финансовых показателей, используемых в скрипте. Все исходные данные загружаются с помощью библиотеки `yfinance`, которая получает информацию с портала Yahoo Finance.
+This document describes the data sources and calculation formulas for all financial metrics used in the script. All raw data is loaded using the `yfinance` library, which retrieves information from the Yahoo Finance portal.
 
-## 1. Источники исходных данных (yfinance API)
+## 1. Data Sources (yfinance API)
 
-Скрипт использует следующие методы объекта `yf.Ticker`:
-- **`ticker.income_stmt`** — Отчет о прибылях и убытках (Income Statement).
-- **`ticker.balance_sheet`** — Бухгалтерский баланс (Balance Sheet).
-- **`ticker.cashflow`** — Отчет о движении денежных средств (Cash Flow Statement).
-- **`ticker.dividends`** — Исторические данные по выплатам дивидендов.
-- **`ticker.history`** — Исторические котировки акций (для получения цены на конец года).
-- **`ticker.info`** — Общая информация о компании (сектор, индустрия, количество акций в обращении).
-
----
-
-## 2. Показатели, извлекаемые напрямую из отчетов
-
-### Отчет о прибылях и убытках (Income Statement)
-* **Revenue (Выручка)** — из строки `Total Revenue`.
-* **Gross Profit (Валовая прибыль)** — из строки `Gross Profit`.
-* **Net Income (Чистая прибыль)** — из строк `Net Income` или `Net Income Common Stockholders`.
-* **EPS (Прибыль на акцию)** — из строки `Diluted EPS` (разводненная прибыль на акцию).
-* **Diluted Shares (Количество акций)** — из строки `Diluted Average Shares`.
-* **EBITDA** — из строки `EBITDA`.
-* **EBIT (Операционная прибыль)** — из строк `EBIT` или `Operating Income`.
-* **Interest Expense (Процентные расходы)** — модуль значения из строк `Interest Expense` или `Interest Expense Non Operating`.
-* **Pretax Income (Прибыль до налогообложения)** — из строки `Pretax Income`.
-* **Tax Provision (Налог на прибыль)** — из строки `Tax Provision`.
-
-### Бухгалтерский баланс (Balance Sheet)
-* **Cash (Денежные средства)** — из строк `Cash And Cash Equivalents` или `Cash`.
-* **Current Assets (Текущие активы)** — из строки `Current Assets`.
-* **Total Assets (Всего активов)** — из строки `Total Assets`.
-* **Current Liabilities (Текущие обязательства)** — из строки `Current Liabilities`.
-* **Inventory (Запасы)** — из строки `Inventory`.
-* **Equity (Собственный капитал)** — из строк `Stockholders Equity`, `Common Stock Equity` или `Total Equity Gross Minority Interest`.
-* **Total Debt (Общий долг)** — из строки `Total Debt`.
-
-### Отчет о движении денежных средств (Cash Flow Statement)
-* **Operating Cash Flow (Операционный денежный поток)** — из строки `Operating Cash Flow`.
-* **Capital Expenditure (Капитальные затраты)** — из строки `Capital Expenditure`.
-* **Common Dividends Paid (Выплаченные дивиденды)** — модуль значения из строк `Common Stock Dividend Paid` или `Cash Dividends Paid`.
+The script uses the following methods of the `yf.Ticker` object:
+* **`ticker.income_stmt`** — Income Statement.
+* **`ticker.balance_sheet`** — Balance Sheet.
+* **`ticker.cashflow`** — Cash Flow Statement.
+* **`ticker.dividends`** — Historical dividend payout data.
+* **`ticker.history`** — Historical stock quotes (used to get the year-end price).
+* **`ticker.info`** — General company information (sector, industry, shares outstanding).
 
 ---
 
-## 3. Показатели, рассчитываемые на основе извлеченных данных
+## 2. Metrics Extracted Directly from Reports
 
-### Базовые показатели и промежуточные расчеты
-* **Tax Rate (Эффективная налоговая ставка)**: `Tax Provision / Pretax Income` (если прибыль до налогов > 0; если <= 0, ставка принимается за 0%).
-* **Average Equity (Средний собственный капитал)**: `(Собственный капитал за текущий год + Собственный капитал за прошлый год) / 2`.
-* **Invested Capital (Инвестированный капитал)**: извлекается напрямую (`Invested Capital`), если отсутствует — рассчитывается как `Total Debt + Equity - Cash`.
-* **FCF (Свободный денежный поток)**: извлекается напрямую (`Free Cash Flow`), если отсутствует — рассчитывается как `Operating Cash Flow + Capital Expenditure` (Capex обычно отрицательный в отчетах).
-* **DPS (Дивиденды на акцию)**: берется сумма выплаченных дивидендов за год из `ticker.dividends`. Если данных нет, рассчитывается как `Common Dividends Paid / Diluted Shares`.
-* **NOPAT (Чистая операционная прибыль после налогов)**: `EBIT * (1 - Tax Rate)`. Если `Tax Rate` неизвестен, используется ставка по умолчанию `21%`.
-* **Net Debt (Чистый долг)**: `Total Debt - Cash`.
+### Income Statement
+* **Revenue** — from the `Total Revenue` line.
+* **Gross Profit** — from the `Gross Profit` line.
+* **Net Income** — from the `Net Income` or `Net Income Common Stockholders` lines.
+* **EPS (Earnings Per Share)** — from the `Diluted EPS` line.
+* **Diluted Shares** — from the `Diluted Average Shares` line.
+* **EBITDA** — from the `EBITDA` line.
+* **EBIT (Operating Income)** — from the `EBIT` or `Operating Income` lines.
+* **Interest Expense** — the absolute value from the `Interest Expense` or `Interest Expense Non Operating` lines.
+* **Pretax Income** — from the `Pretax Income` line.
+* **Tax Provision** — from the `Tax Provision` line.
 
-### Рентабельность и маржинальность
-* **Gross Margin (Валовая рентабельность)**: `Gross Profit / Revenue`.
-* **Operating Margin (Операционная рентабельность)**: `EBIT / Revenue`.
-* **Net Profit Margin (Чистая рентабельность)**: `Net Income / Revenue`.
-* **ROE (Рентабельность собственного капитала)**: `Net Income / Average Equity`.
-* **ROIC (Рентабельность инвестированного капитала)**: `NOPAT / Invested Capital`.
+### Balance Sheet
+* **Cash** — from the `Cash And Cash Equivalents` or `Cash` lines.
+* **Current Assets** — from the `Current Assets` line.
+* **Total Assets** — from the `Total Assets` line.
+* **Current Liabilities** — from the `Current Liabilities` line.
+* **Inventory** — from the `Inventory` line.
+* **Equity** — from the `Stockholders Equity`, `Common Stock Equity`, or `Total Equity Gross Minority Interest` lines.
+* **Total Debt** — from the `Total Debt` line.
 
-### Политика выплат (Payout Ratios)
-* **Payout Ratio based on NI (по чистой прибыли)**: `Common Dividends Paid / Net Income`.
-* **Payout Ratio based on FCF (по свободному денежному потоку)**: `Common Dividends Paid / FCF`.
-
-### Долговая нагрузка и покрытие
-* **D/E (Коэффициент Долг / Собственный капитал)**: `Total Debt / Equity`.
-* **Interest Coverage (Коэффициент покрытия процентов)**: `EBIT / Interest Expense`.
-* **OCF / Total Debt**: `Operating Cash Flow / Total Debt`.
-* **Net Debt / EBITDA**: `Net Debt / EBITDA`.
-
-### Ликвидность
-* **Current Ratio (Текущая ликвидность)**: `Current Assets / Current Liabilities`.
-* **Quick Ratio (Быстрая ликвидность)**: `(Current Assets - Inventory) / Current Liabilities`.
-* **Cash Ratio (Абсолютная ликвидность)**: `Cash / Current Liabilities`.
-
-### Сводные метрики роста (CAGR - Среднегодовой темп роста)
-Формула для расчета CAGR: `(Конечное значение / Начальное значение) ^ (1 / Количество лет) - 1`.
-Применяется к показателям: **Revenue, Net Income, EPS, DPS, FCF**.
-
-### Мультипликаторы оценки стоимости (Valuation Multiples)
-Для расчетов используются цена акции на конец года (`Price`), общее количество акций (`Shares Outstanding`) и балансовый собственный капитал (`Equity`).
-* **Market Cap (Рыночная капитализация)**: `Price * Shares Outstanding`.
-* **EV (Стоимость предприятия)**: `Market Cap + Total Debt - Cash`.
-* **P/E (Цена / Прибыль)**: `Price / EPS`.
-* **P/S (Цена / Выручка)**: `Market Cap / Revenue`.
-* **P/FCF (Цена / Свободный денежный поток)**: `Market Cap / FCF`.
-* **EV/EBITDA**: `EV / EBITDA`.
-* **Dividend Yield (Дивидендная доходность)**: `DPS / Price`.
-* **P/B (Цена / Балансовая стоимость)**: `Market Cap / Equity`.
-* **PEG (Отношение P/E к росту EPS)**: `P/E / (EPS CAGR * 100)`.
+### Cash Flow Statement
+* **Operating Cash Flow** — from the `Operating Cash Flow` line.
+* **Capital Expenditure (CapEx)** — from the `Capital Expenditure` line.
+* **Common Dividends Paid** — the absolute value from the `Common Stock Dividend Paid` or `Cash Dividends Paid` lines.
 
 ---
 
-## 4. Особенности работы с отсутствующими данными (Missing Data)
+## 3. Metrics Calculated Based on Extracted Data
 
-При автоматическом сборе данных с Yahoo Finance некоторые показатели могут отсутствовать (из-за различий в стандартах отчетности, бизнес-моделях или сбоях парсера). Скрипт использует следующие правила для обеспечения финансовой корректности расчетов:
+### Basic Metrics and Intermediate Calculations
+* **Tax Rate (Effective Tax Rate):** `Tax Provision / Pretax Income` (if Pretax Income > 0; if <= 0, the rate is assumed to be 0%).
+* **Average Equity:** `(Current Year Equity + Previous Year Equity) / 2`.
+* **Invested Capital:** Extracted directly (`Invested Capital`); if missing, calculated as `Total Debt + Equity - Cash`.
+* **FCF (Free Cash Flow):** Extracted directly (`Free Cash Flow`); if missing, calculated as `Operating Cash Flow + Capital Expenditure` (CapEx is usually negative in reports).
+* **DPS (Dividends Per Share):** The sum of dividends paid for the year from `ticker.dividends`. If no data is available, calculated as `Common Dividends Paid / Diluted Shares`.
+* **NOPAT (Net Operating Profit After Tax):** `EBIT * (1 - Tax Rate)`. If `Tax Rate` is unknown, a default rate of `21%` is used.
+* **Net Debt:** `Total Debt - Cash`.
 
-### 4.1. Протягивание данных (Forward Fill)
-Перед расчетом производных метрик скрипт проверяет базовые финансовые показатели (выручку, активы, кэш и т.д.) по годам. Если за текущий год показатель отсутствует, но он был в прошлом году, скрипт автоматически **копирует значение из предыдущего года**. Если данных нет вообще за весь период, ячейка остается пустой.
+### Profitability and Margins
+* **Gross Margin:** `Gross Profit / Revenue`.
+* **Operating Margin:** `EBIT / Revenue`.
+* **Net Profit Margin:** `Net Income / Revenue`.
+* **ROE (Return on Equity):** `Net Income / Average Equity`.
+* **ROIC (Return on Invested Capital):** `NOPAT / Invested Capital`.
 
-### 4.2. Безопасное деление и неоправданное отсутствие данных
-Большинство производных коэффициентов (P/E, маржинальность, ROE, покрытие процентов и др.) рассчитываются с помощью специальной функции безопасного деления.
-* **Правило:** Если хотя бы один из необходимых показателей отсутствует (равен `NaN`), расчет отменяется, и функция возвращает пустую ячейку. 
-* **Причина:** Если у компании (например, у ASML) пропущен `Operating Cash Flow` из-за стандартов IFRS, приравнивание его к нулю грубо исказило бы коэффициент `OCF / Total Debt`. Поэтому скрипт оставляет такие расчеты пустыми.
+### Payout Policies
+* **Payout Ratio based on NI:** `Common Dividends Paid / Net Income`.
+* **Payout Ratio based on FCF:** `Common Dividends Paid / FCF`.
 
-### 4.3. Оправданное приравнивание к нулю
-В коде есть 3 строгих исключения, где отсутствующее значение принудительно заменяется нулем (`0`). Это делается только там, где "пустота" в отчете физически означает отсутствие данного актива или обязательства:
-1. **Запасы (Inventory):** Если запасов нет (как у IT-компаний META или NFLX), они приравниваются к нулю. Это позволяет корректно рассчитывать *Quick Ratio*.
-2. **Общий долг (Total Debt):** Если у компании нет кредитов, долг приравнивается к нулю. Это позволяет рассчитать *EV (Стоимость предприятия)*.
-3. **Денежные средства (Cash):** Если кэш не выделен отдельно, он приравнивается к нулю для расчета *Чистого долга (Net Debt)*.
+### Debt Load and Coverage
+* **D/E (Debt-to-Equity):** `Total Debt / Equity`.
+* **Interest Coverage:** `EBIT / Interest Expense`.
+* **OCF / Total Debt:** `Operating Cash Flow / Total Debt`.
+* **Net Debt / EBITDA:** `Net Debt / EBITDA`.
 
-### 4.4. Альтернативные формулы (Fallbacks)
-Если Yahoo Finance не выдает готовый показатель, скрипт пытается рассчитать его вручную:
-* **Свободный денежный поток (FCF):** Если готовой строки нет, считается как `Operating Cash Flow + Capital Expenditure`.
-* **Инвестированный капитал (Invested Capital):** Считается как `Total Debt + Equity - Cash`.
-* **Средний собственный капитал (Average Equity):** Используется для ROE. Если капитала за прошлый год нет, скрипт не высчитывает среднее, а просто берет капитал текущего года.
-* **Налоговая ставка (Tax Rate):** Если компания понесла убыток до налогов, эффективная ставка приравнивается к `0`. Если данных по налогам нет вообще, для расчета NOPAT применяется стандартная корпоративная ставка `21%`.
-* **Дивиденды на акцию (DPS):** Если готовой истории дивидендов нет, рассчитывается как общая сумма выплат `Common Dividends Paid`, деленная на количество разводненных акций.
+### Liquidity
+* **Current Ratio:** `Current Assets / Current Liabilities`.
+* **Quick Ratio:** `(Current Assets - Inventory) / Current Liabilities`.
+* **Cash Ratio:** `Cash / Current Liabilities`.
 
-### 4.5. Мультипликатор PEG
-Показатель PEG (P/E to Growth) требует стабильного значения роста. Поскольку годовой рост EPS (от года к году) слишком волатилен, PEG в скрипте рассчитывается **только на сводной вкладке (Summary)** с использованием усредненного долгосрочного `EPS CAGR`, а не в рамках истории по каждому отдельному году.
+### Growth Metrics (CAGR)
+The formula for calculating CAGR: `(Ending Value / Beginning Value) ^ (1 / Number of Years) - 1`.
+Applied to: **Revenue, Net Income, EPS, DPS, FCF**.
+
+### Valuation Multiples
+Calculations use the year-end stock price (`Price`), `Shares Outstanding`, and balance sheet `Equity`.
+* **Market Cap:** `Price * Shares Outstanding`.
+* **EV (Enterprise Value):** `Market Cap + Total Debt - Cash`.
+* **P/E (Price-to-Earnings):** `Price / EPS`.
+* **P/S (Price-to-Sales):** `Market Cap / Revenue`.
+* **P/FCF (Price-to-Free Cash Flow):** `Market Cap / FCF`.
+* **EV/EBITDA:** `EV / EBITDA`.
+* **Dividend Yield:** `DPS / Price`.
+* **P/B (Price-to-Book):** `Market Cap / Equity`.
+* **PEG (P/E to Growth):** `P/E / (EPS CAGR * 100)`.
+
+---
+
+## 4. Handling Missing Data
+
+When automatically gathering data from Yahoo Finance, some metrics may be missing (due to differences in reporting standards, business models, or parser issues). The script applies the following rules to ensure the financial accuracy of calculations:
+
+### 4.1. Forward Fill
+Before calculating derived metrics, the script checks basic financial figures (revenue, assets, cash, etc.) year by year. If a metric is missing for the current year but existed in the previous year, the script automatically **copies the value from the prior year**. If there is no data at all for the entire period, the cell remains empty.
+
+### 4.2. Safe Division and Justified Missing Data
+Most derived ratios (P/E, margins, ROE, interest coverage, etc.) are calculated using a special safe division function.
+* **Rule:** If at least one of the required inputs is missing (`NaN`), the calculation is aborted, and the function returns an empty cell.
+* **Reason:** If a company (e.g., ASML) is missing `Operating Cash Flow` due to IFRS standards, equating it to zero would severely distort the `OCF / Total Debt` ratio. Therefore, the script leaves such calculations blank.
+
+### 4.3. Justified Forcing to Zero
+There are 3 strict exceptions in the code where a missing value is forcibly replaced with zero (`0`). This is done only when "emptiness" in the report physically means the absence of that asset or liability:
+1.  **Inventory:** If there is no inventory (like IT companies META or NFLX), it is set to zero. This allows for the correct calculation of the *Quick Ratio*.
+2.  **Total Debt:** If a company has no loans, debt is set to zero. This allows for the calculation of *EV (Enterprise Value)*.
+3.  **Cash:** If cash is not separated out, it is set to zero for the calculation of *Net Debt*.
+
+### 4.4. Fallbacks (Alternative Formulas)
+If Yahoo Finance does not provide a ready-made metric, the script attempts to calculate it manually:
+* **FCF (Free Cash Flow):** If the specific line is missing, it's calculated as `Operating Cash Flow + Capital Expenditure`.
+* **Invested Capital:** Calculated as `Total Debt + Equity - Cash`.
+* **Average Equity:** Used for ROE. If previous year equity is missing, the script skips averaging and simply uses the current year's equity.
+* **Tax Rate:** If the company incurred a pretax loss, the effective rate is set to `0`. If tax data is completely missing, a standard corporate rate of `21%` is applied to calculate NOPAT.
+* **DPS (Dividends Per Share):** If a ready-made dividend history isn't available, it is calculated as total `Common Dividends Paid` divided by diluted shares.
+
+### 4.5. PEG Multiple
+The PEG (P/E to Growth) ratio requires a stable growth rate. Since year-over-year EPS growth is too volatile, the script calculates PEG **only on the Summary tab** using the averaged long-term `EPS CAGR`, rather than calculating it historically for each individual year.
