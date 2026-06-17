@@ -1,52 +1,54 @@
-# 📈 Формирование, оптимизация и стресс-тестирование инвестиционного портфеля (NASDAQ)
+# 📈 Formation, Optimization, and Stress-Testing of an Investment Portfolio (NASDAQ)
 
 ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
 ![NumPy](https://img.shields.io/badge/numpy-%23013243.svg?style=for-the-badge&logo=numpy&logoColor=white)
 ![Pandas](https://img.shields.io/badge/pandas-%23150458.svg?style=for-the-badge&logo=pandas&logoColor=white)
-![SciPy](https://img.shields.io/badge/SciPy-%230C55A5.svg?style=for-the-badge&logo=scipy&logoColor=%white)
+![SciPy](https://img.shields.io/badge/SciPy-%230C55A5.svg?style=for-the-badge&logo=scipy&logoColor=white)
 
-Учебный проект, выполненный в рамках курса «Финансовый менеджмент» в НИУ ВШЭ (Высшая школа бизнеса).
+An academic project completed as part of the "Financial Management" course at HSE University (Graduate School of Business).
 
-Проект посвящен количественному анализу фондового рынка: от фундаментального отбора акций технологического сектора США (биржа NASDAQ) до построения границы эффективности Марковица и продвинутого стресс-тестирования хвостовых рисков с помощью симуляций Монте-Карло (модель Jump-Diffusion).
+This project focuses on the quantitative analysis of the stock market: from the fundamental screening of US tech sector stocks (NASDAQ) to constructing the Markowitz efficient frontier and performing advanced stress-testing of tail risks using Monte Carlo simulations (Jump-Diffusion model).
 
-## 🎯 Цели и задачи проекта
+## 🎯 Goals and Objectives
 
-Главная цель — алгоритмически собрать инвестиционный портфель, оптимизировать его структуру и проверить на прочность («на разрыв») в условиях макроэкономических шоков и рыночной неопределенности.
+The main goal is to algorithmically construct an investment portfolio, optimize its structure, and stress-test its resilience ("to the breaking point") under macroeconomic shocks and market uncertainty.
 
-**Ключевые этапы:**
+**Key stages:**
 
-1. **Фундаментальный скрининг:** Отбор 10 наиболее устойчивых и эффективных компаний из 22 кандидатов на основе мультипликаторов (P/E, EV/EBITDA, P/S) и показателей рентабельности (ROE, ROIC, Net Margin) в 5 секторах.
-2. **Алгоритмическая оптимизация:** Расчет ковариационных матриц и поиск оптимальных весов (Max Sharpe, Min Volatility) на данных 2024 года.
-3. **Форвардное тестирование (Out-of-sample):** Проверка "обученных" весов на турбулентных данных 2025 года и сравнение со стратегией равных долей (1/N).
-4. **Стресс-тестирование (Monte Carlo):** Симуляция 10 000 сценариев на 5 лет вперед с использованием модели диффузии со скачками Мертона (Jump-Diffusion) для оценки риска (CVaR) при обвалах рынка до -15%.
+1. **Fundamental Screening:** Selecting the 10 most fundamentally sound and efficient companies out of 22 candidates based on valuation multiples (P/E, EV/EBITDA, P/S) and profitability metrics (ROE, ROIC, Net Margin) across 5 sectors.
+2. **Algorithmic Optimization:** Calculating covariance matrices and finding optimal weights (Max Sharpe, Min Volatility) using 2024 data.
+3. **Forward Testing (Out-of-sample):** Testing the "trained" weights on the turbulent data of 2025 and comparing them with a naive equal-weight strategy (1/N).
+4. **Stress-Testing (Monte Carlo):** Simulating 10,000 scenarios 5 years forward using Merton's Jump-Diffusion model to estimate risk (CVaR) during market crashes up to -15%.
 
-## 🛠️ Стек технологий
+## 🛠️ Tech Stack
 
-* **Язык:** `Python 3`
-* **Сбор данных:** `yfinance`
-* **Математика и оптимизация:** `numpy`, `pandas`, `scipy.optimize`
-* **Визуализация:** `matplotlib`, `seaborn`
+* **Language:** `Python 3`
+* **Data Collection:** `yfinance`
+* **Math & Optimization:** `numpy`, `pandas`, `scipy.optimize`
+* **Visualization:** `matplotlib`, `seaborn`
 
-## 🧠 Главные выводы исследования (Инсайт)
+## 🧠 Key Findings (Insights)
 
-В ходе работы был обнаружен и математически доказан парадокс портфельной оптимизации:
+During the research, a portfolio optimization paradox was discovered and mathematically proven:
 
-* В условиях "шумного", но растущего рынка 2025 года оптимизированный портфель (Max SR) уступил наивному распределению 1/N по доходности. Оптимизация показалась "переобученной".
-* Однако **Монте-Карло симуляция хвостовых рисков доказала обратное**: алгоритм Марковица выстроил сверхзащитную «броню». При возникновении тяжелых кризисов и обвалов рынка (от -5% до -15%), оптимизированный портфель проявил непревзойденную устойчивость, обыграв равновзвешенную стратегию абсолютно во всех 25 кризисных сценариях.
+* In the conditions of the "noisy" but growing market of 2025, the optimized portfolio (Max SR) underperformed the naive 1/N allocation in terms of returns. The optimization appeared to be "overfitted."
+* However, **the Monte Carlo simulation of tail risks proved the exact opposite**: Markowitz's algorithm built an ultra-protective "armor." When severe crises and market crashes (drops from -5% to -15%) occurred, the optimized portfolio demonstrated unmatched resilience, outperforming the equally weighted strategy in absolutely all 25 crisis scenarios.
 
-## 📂 Структура проекта
+## 📂 Project Structure
 
-* `код/collect info.py` — скрипт автоматического сбора исторических котировок через API Yahoo Finance и их первичной очистки.
-* `код/portfolio_analize.py` — ядро проекта: расчет доходностей, ковариаций, построение границы эффективности Марковица, расчет коэффициента Шарпа и других метрик.
-* `код/monte сarlo.py` — реализация модели Мертона (Jump-Diffusion). Генерация матриц случайного шума и пуассоновских "скачков", построение конуса вероятностей и расчет метрики CVaR (Conditional Value-at-Risk).
-* `фин мен.md` — полный текст исследовательского отчета с выводами и экономическим обоснованием.
+* `код/collect info.py` — script for automated historical quotes collection via the Yahoo Finance API and initial data cleaning.
+* `код/portfolio_analize.py` — the core of the project: calculating returns, covariances, plotting the Markowitz efficient frontier, calculating the Sharpe ratio, and other key metrics.
+* `код/monte сarlo.py` — implementation of Merton's model (Jump-Diffusion). Generating random noise matrices and Poisson "jumps", plotting the probability cone, and calculating the CVaR (Conditional Value-at-Risk) metric.
+* `фин мен.md` — full text of the research report with conclusions and economic rationale.
 
-## 👥 Команда проекта (НИУ ВШЭ)
+*(Note: File paths are kept as in the original repository)*
 
-* Андреев В. В.
-* Бутенко А. А.
-* Валиева М. Г.
-* Григорян Д. Н.
-* Дао Фи Хунг(отвечал за коды и проведение доп. анализа)
+## 👥 Project Team (HSE University)
 
-*(Студенты образовательной программы «Маркетинг и рыночная аналитика») 2026 г.*
+* V. V. Andreev
+* A. A. Butenko
+* M. G. Valieva
+* D. N. Grigoryan
+* Dao Phi Hung (responsible for codebase and conducting additional analysis)
+
+*(Students of the "Marketing and Market Analytics" educational program) 2026*
