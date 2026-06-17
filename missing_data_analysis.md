@@ -1,40 +1,46 @@
-# Анализ отсутствующих данных в финансовой отчетности
+# Analysis of Missing Data in Financial Statements
 
-При сборе данных с помощью `yfinance` для некоторых компаний в итоговом файле `dividend_aristocrats_backtest.xlsx` образуются пустые ячейки. Это не ошибка скрипта, а следствие бизнес-модели компаний, их дивидендной политики или особенностей агрегации данных.
+When collecting data using `yfinance`, you may notice empty cells for certain companies in the final `dividend_aristocrats_backtest.xlsx` file. This is not a script error, but rather a consequence of the companies' business models, their dividend policies, or data aggregation specifics. 
 
-Ниже приведено обоснование по каждой группе показателей.
+Below is the rationale for each group of metrics.
 
-## 1. Отсутствие запасов (Inventory)
-**Компании:** `META`, `NFLX`, `PDD`, `CHTR`
-**Почему так происходит:**
-Данные компании имеют бизнес-модели, которые не предполагают хранения физических товаров (запасов) для перепродажи:
-*   **META (Meta Platforms)** и **NFLX (Netflix)**: продают цифровые услуги, подписки и рекламу. Их главные активы — это серверы, софт и интеллектуальная собственность (контент), а не товары на складе.
-*   **PDD (Pinduoduo)**: является маркетплейсом (платформой-посредником). Сама компания не закупает и не хранит товары — запасы лежат на складах независимых продавцов.
-*   **CHTR (Charter Communications)**: телекоммуникационная компания. Ее активы — это инфраструктура (кабели, вышки, оборудование), а не потребительские товары.
+## 1. Missing Inventory Data
+**Companies:** `META`, `NFLX`, `PDD`, `CHTR`
+
+**Why this happens:**
+These companies operate on business models that do not require storing physical goods (inventory) for resale:
+* **META (Meta Platforms)** and **NFLX (Netflix):** They sell digital services, subscriptions, and advertising. Their primary assets are servers, software, and intellectual property (content), not warehoused goods.
+* **PDD (Pinduoduo):** Operates as a marketplace (intermediary platform). The company itself does not purchase or store goods—inventory is held in the warehouses of independent sellers.
+* **CHTR (Charter Communications):** A telecommunications company. Its assets consist of infrastructure (cables, towers, equipment) rather than consumer goods.
 
 > [!NOTE]
-> В скрипте предусмотрена защита: для таких компаний при расчете коэффициентов (например, *Quick Ratio*) запасы приравниваются к нулю.
+> The script includes a safeguard: for such companies, inventory is set to zero when calculating ratios (e.g., *Quick Ratio*).
 
-## 2. Отсутствие дивидендов (DPS, Dividends Paid, Payout Ratios, Dividend Yield)
-**Компании:** `AMD`, `AMZN`, `CHTR`, `NFLX`, `PDD`, `REGN`, `TSLA`, `VRTX`
-**Почему так происходит:**
-Эти компании исторически **не платят дивиденды** своим акционерам. Вся заработанная прибыль (Свободный денежный поток) направляется на:
-1.  Агрессивный рост и реинвестирование в бизнес (R&D, строительство фабрик у TSLA, дата-центры у AMZN).
-2.  Обратный выкуп акций (Buybacks). Например, CHTR и META активно выкупают свои акции с рынка, что увеличивает долю каждого акционера без выплаты дивидендов, экономя на налогах.
+## 2. Missing Dividend Data (DPS, Dividends Paid, Payout Ratios, Dividend Yield)
+**Companies:** `AMD`, `AMZN`, `CHTR`, `NFLX`, `PDD`, `REGN`, `TSLA`, `VRTX`
 
-## 3. Отсутствие операционного денежного потока (Operating Cash Flow)
-**Компании:** `ASML`
-**Почему так происходит:**
-ASML — это европейская компания (Нидерланды), которая составляет отчетность по стандартам **EU-IFRS**, а для американской биржи подает форму 20-F. Автоматические агрегаторы данных (такие как Yahoo Finance) часто испытывают проблемы с "нормализацией" европейских отчетов под стандарты US GAAP. Из-за разницы в названиях строк парсеры `yfinance` иногда не могут найти и извлечь строку `Operating Cash Flow` для ASML.
+**Why this happens:**
+These companies historically **do not pay dividends** to their shareholders. All generated profit (Free Cash Flow) is directed towards:
+1. Aggressive growth and business reinvestment (R&D, gigafactory construction for TSLA, data centers for AMZN).
+2. Share buybacks. For instance, CHTR and META actively repurchase their own shares from the market, which increases the ownership stake of each shareholder without paying out dividends, effectively saving on taxes.
+
+## 3. Missing Operating Cash Flow Data
+**Companies:** `ASML`
+
+**Why this happens:**
+ASML is a European company (Netherlands) that prepares its financial statements according to **EU-IFRS** standards and files Form 20-F for US exchanges. Automated data aggregators (like Yahoo Finance) often struggle to "normalize" European reports to fit US GAAP standards. Due to differences in line-item naming conventions, `yfinance` parsers sometimes fail to locate and extract the `Operating Cash Flow` line for ASML.
+
 > [!TIP]
-> В реальности у ASML огромный положительный денежный поток. Для точного анализа таких иностранных эмитентов лучше смотреть первичные отчеты IFRS на сайте Investor Relations компании.
+> In reality, ASML generates massive positive cash flow. For an accurate analysis of such foreign issuers, it is best to consult the original IFRS reports directly on the company's Investor Relations website.
 
-## 4. Отсутствие налогов (Tax Provision и Tax Rate)
-**Компании:** `AMZN` (в отдельные годы)
-**Почему так происходит:**
-Несмотря на колоссальную выручку, Amazon часто показывает отсутствие налоговых выплат. Это связано с тем, что компания агрессивно инвестирует в капитальные затраты (Capex) и исследования (R&D). Налоговое законодательство США позволяет списывать эти инвестиции, создавая гигантские налоговые вычеты (Tax Credits) и перенося убытки прошлых лет. В результате в некоторых отчетах строка налога на прибыль равна нулю или отрицательна.
+## 4. Missing Tax Data (Tax Provision and Tax Rate)
+**Companies:** `AMZN` (in specific years)
 
-## 5. Отсутствие коэффициента покрытия процентов (Interest Coverage)
-**Компании:** `PDD`
-**Почему так происходит:**
-Формула покрытия процентов: `EBIT / Interest Expense`. Pinduoduo генерирует настолько много наличности и имеет так мало классического процентного долга, что процентные доходы от кэша на счетах часто превышают их процентные расходы. В отчете строка чистых процентных расходов (Interest Expense) может отсутствовать или быть равна нулю, что делает невозможным расчет этого коэффициента.
+**Why this happens:**
+Despite generating colossal revenue, Amazon frequently reports zero tax payments. This occurs because the company invests aggressively in capital expenditures (CapEx) and Research & Development (R&D). US tax law allows companies to write off these investments, generating massive Tax Credits and carrying forward net operating losses from previous years. As a result, the income tax provision line in some reports equals zero or becomes negative.
+
+## 5. Missing Interest Coverage Ratio
+**Companies:** `PDD`
+
+**Why this happens:**
+The interest coverage formula is `EBIT / Interest Expense`. Pinduoduo generates so much cash and carries so little traditional interest-bearing debt that the interest income from its cash reserves often exceeds its interest expenses. In the financial report, the net `Interest Expense` line might be missing or equal to zero, making it mathematically impossible to calculate this ratio.
