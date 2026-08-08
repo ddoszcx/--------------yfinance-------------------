@@ -39,7 +39,6 @@ During the research, a portfolio optimization paradox was discovered and mathema
 * `код/collect info.py` — script for automated historical quotes collection via the Yahoo Finance API and initial data cleaning.
 * `код/portfolio_analize.py` — the core of the project: calculating returns, covariances, plotting the Markowitz efficient frontier, calculating the Sharpe ratio, and other key metrics.
 * `код/monte сarlo.py` — implementation of Merton's model (Jump-Diffusion). Generating random noise matrices and Poisson "jumps", plotting the probability cone, and calculating the CVaR (Conditional Value-at-Risk) metric.
-* `фин мен.md` — full text of the research report with conclusions and economic rationale.
 
 *(Note: File paths are kept as in the original repository)*
 
