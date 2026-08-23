@@ -6,10 +6,10 @@ import numpy as np
 import pandas as pd
 import yfinance as yf
 
-# Настройка логирования
+# настройка логирования
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 
-# --- Конфигурация ---
+# заранеее отобранные тикеры для составления портфеля
 TICKERS = [
     "AAPL", "MSFT", "AMD", "ASML", "AMZN", "TSLA", "MELI", "PDD", "GOOGL",
     "META", "NFLX", "TMUS", "CHTR", "AMGN", "GILD", "REGN", "VRTX", "COST",
@@ -23,7 +23,7 @@ OUTPUT_PATH = Path.cwd() / "company_info_metrics_refactored.xlsx"
 
 
 def get_col_by_year(table: pd.DataFrame, year: int) -> Optional[Any]:
-    """Возвращает столбец из таблицы для заданного года."""
+    """возвращает столбец из таблицы для заданного года."""
     if table is None or table.empty:
         return None
     for col in table.columns:
@@ -33,7 +33,7 @@ def get_col_by_year(table: pd.DataFrame, year: int) -> Optional[Any]:
 
 
 def get_row_value(table: pd.DataFrame, row_names: Union[str, List[str]], col: Any, default: Any = pd.NA) -> Any:
-    """Извлекает значение из строки по имени и столбцу."""
+    """извлекает значение из строки по имени и столбцу."""
     if table is None or table.empty or col is None:
         return default
     if isinstance(row_names, str):
@@ -45,14 +45,14 @@ def get_row_value(table: pd.DataFrame, row_names: Union[str, List[str]], col: An
 
 
 def safe_abs(value: Any) -> Any:
-    """Возвращает модуль значения, если оно не pd.NA."""
+    """возвращает модуль значения, если оно не pd.NA."""
     if pd.isna(value):
         return pd.NA
     return abs(value)
 
 
 def safe_divide(numerator: Any, denominator: Any) -> Any:
-    """Безопасное деление, избегающее деления на ноль."""
+    """безопасное деление, избегающее деления на ноль."""
     if pd.isna(numerator) or pd.isna(denominator):
         return pd.NA
     if denominator == 0:
@@ -61,7 +61,7 @@ def safe_divide(numerator: Any, denominator: Any) -> Any:
 
 
 def safe_divide_series(num_series: pd.Series, den_series: pd.Series) -> pd.Series:
-    """Безопасное деление для pd.Series."""
+    """безопасное деление для pd.Series"""
     return num_series / den_series.replace(0, np.nan)
 
 
@@ -83,7 +83,7 @@ def collect_company_year(
     dividends: pd.Series, 
     hist_prices: pd.DataFrame
 ) -> Dict[str, Any]:
-    """Сбор финансовых показателей компании за конкретный год."""
+    """cбор финансовых показателей компании за конкретный год."""
     incomecol = get_col_by_year(income, year)
     balancecol = get_col_by_year(balance, year)
     prevbalancecol = get_col_by_year(balance, year - 1)
@@ -102,7 +102,7 @@ def collect_company_year(
         if not year_hist.empty:
             price = year_hist["Close"].iloc[-1]
 
-    # Income statement
+    # income statement
     revenue = get_row_value(income, "Total Revenue", incomecol)
     gross_profit = get_row_value(income, "Gross Profit", incomecol)
     net_income = get_row_value(income, ["Net Income", "Net Income Common Stockholders"], incomecol)
@@ -121,7 +121,7 @@ def collect_company_year(
     elif pd.notna(pretax_income) and pd.notna(tax_provision) and pretax_income <= 0:
         tax_rate = 0.0
 
-    # Balance sheet
+    # balance sheet
     cash = get_row_value(balance, ["Cash And Cash Equivalents", "Cash"], balancecol)
     current_assets = get_row_value(balance, "Current Assets", balancecol)
     total_assets = get_row_value(balance, "Total Assets", balancecol)
@@ -142,7 +142,7 @@ def collect_company_year(
     if pd.isna(invested_capital) and pd.notna(total_debt) and pd.notna(equity) and pd.notna(cash):
         invested_capital = total_debt + equity - cash
 
-    # Cash flow statement
+    # cash flow statement
     operating_cash_flow = get_row_value(cashflow, "Operating Cash Flow", cashflowcol)
     capital_expenditure = get_row_value(cashflow, "Capital Expenditure", cashflowcol)
     fcf = get_row_value(cashflow, "Free Cash Flow", cashflowcol)
@@ -197,7 +197,7 @@ def collect_company_year(
 
 
 def get_end_of_year_price(ticker: yf.Ticker, year: int) -> Any:
-    """Получает цену закрытия акции на конец года."""
+    """получает цену закрытия акции на конец года."""
     try:
         hist = ticker.history(start=f"{year}-12-01", end=f"{year+1}-01-01")
         if not hist.empty:
@@ -208,7 +208,7 @@ def get_end_of_year_price(ticker: yf.Ticker, year: int) -> Any:
 
 
 def collect_company_info(ticker_symbol: str) -> Dict[str, str]:
-    """Собирает базовую информацию о компании (название, сектор)."""
+    """собирает базовую информацию о компании (название, сектор)."""
     ticker = yf.Ticker(ticker_symbol)
     info = ticker.info
 
@@ -221,7 +221,7 @@ def collect_company_info(ticker_symbol: str) -> Dict[str, str]:
 
 
 def collect_all_company_info(ticker_group: List[str]) -> pd.DataFrame:
-    """Собирает информацию по списку тикеров в DataFrame."""
+    """собирает информацию по списку тикеров в DataFrame."""
     rows = []
     for ticker_symbol in ticker_group:
         logging.info(f"Collecting info: {ticker_symbol}")
@@ -240,7 +240,7 @@ def collect_all_company_info(ticker_group: List[str]) -> pd.DataFrame:
 
 
 def add_yearly_ratios(df: pd.DataFrame) -> pd.DataFrame:
-    """Добавляет годовые мультипликаторы и метрики."""
+    """добавляет годовые мультипликаторы и метрики."""
     df = df.copy()
 
     df["Gross Margin"] = df.apply(lambda row: safe_divide(row["Gross Profit"], row["Revenue"]), axis=1)
@@ -289,7 +289,7 @@ def add_yearly_ratios(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def collect_historical_data(ticker_group: List[str], years: List[int]) -> pd.DataFrame:
-    """Собирает исторические данные для группы тикеров."""
+    """собирает исторические данные для группы тикеров."""
     rows = []
     for ticker_symbol in ticker_group:
         logging.info(f"Collecting statements: {ticker_symbol}")
@@ -330,7 +330,7 @@ def collect_historical_data(ticker_group: List[str], years: List[int]) -> pd.Dat
 
 
 def calculate_company_summary(historical_data: pd.DataFrame, base_year: int) -> pd.DataFrame:
-    """Рассчитывает агрегированные данные (CAGR, средние значения)."""
+    """рассчитывает агрегированные данные (CAGR, средние значения)"""
     summary_rows = []
     base_data = historical_data[historical_data["Year"] <= base_year]
 
@@ -389,7 +389,7 @@ def calculate_company_summary(historical_data: pd.DataFrame, base_year: int) -> 
 
 
 def extract_test_year_data(historical_data: pd.DataFrame, test_year: int) -> pd.DataFrame:
-    """Извлекает данные за тестовый год."""
+    """извлекает данные за тестовый год"""
     test_data = historical_data[historical_data["Year"] == test_year].copy()
     
     rename_map = {}
@@ -401,7 +401,7 @@ def extract_test_year_data(historical_data: pd.DataFrame, test_year: int) -> pd.
 
 
 def add_valuation_multiples(df: pd.DataFrame, year: int, base_year: int, test_year: int) -> pd.DataFrame:
-    """Добавляет оценочные мультипликаторы для заданного года."""
+    """добавляет оценочные мультипликаторы для заданного года"""
     if year == base_year:
         price_col = "Latest Price"
         eps_col = "Latest EPS"
@@ -444,7 +444,7 @@ def add_valuation_multiples(df: pd.DataFrame, year: int, base_year: int, test_ye
 
 
 def safe_sheet_name(name: str) -> str:
-    """Безопасное имя листа для Excel."""
+    """безопасное имя листа для Excel"""
     bad_chars = ["\\", "/", "*", "[", "]", ":", "?"]
     for char in bad_chars:
         name = name.replace(char, " ")
@@ -452,7 +452,7 @@ def safe_sheet_name(name: str) -> str:
 
 
 def make_metric_sheet(historical_data: pd.DataFrame, metric: str) -> pd.DataFrame:
-    """Создает лист метрик для Excel."""
+    """создает лист метрик для Excel"""
     return historical_data.pivot_table(
         index="Ticker",
         columns="Year",
@@ -470,7 +470,7 @@ def export_to_excel(
     base_year: int, 
     test_year: int
 ) -> None:
-    """Экспорт данных в Excel."""
+    """экспорт данных в Excel"""
     metrics = [
         "Price", "Revenue", "Gross Profit", "Net Income", "EPS", "DPS", "FCF",
         "Pretax Income", "Tax Provision", "Tax Rate", "NOPAT", "Invested Capital",
@@ -495,7 +495,7 @@ def export_to_excel(
 
 
 def main() -> None:
-    """Главная функция запуска скрипта."""
+    """главная функция запуска скрипта"""
     logging.info("Starting collection...")
     historical_data = collect_historical_data(TICKERS, YEARS)
     company_info = collect_all_company_info(TICKERS)
